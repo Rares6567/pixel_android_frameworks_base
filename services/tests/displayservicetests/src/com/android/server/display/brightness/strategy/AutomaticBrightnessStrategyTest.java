@@ -112,6 +112,34 @@ public class AutomaticBrightnessStrategyTest {
                 true);
     }
 
+    @Test
+    public void testResetAutoBrightnessAdjustmentClearsPreviousSession() {
+        mAutomaticBrightnessStrategy.setTemporaryAutoBrightnessAdjustment(0.8f);
+        mAutomaticBrightnessStrategy.setShouldResetShortTermModel(false);
+
+        mAutomaticBrightnessStrategy.resetAutoBrightnessAdjustment();
+
+        assertEquals(0.0f, mAutomaticBrightnessStrategy.getAutoBrightnessAdjustment(), 0.0f);
+        assertEquals(0.0f, mAutomaticBrightnessStrategy.getPendingAutoBrightnessAdjustment(), 0.0f);
+        assertTrue(Float.isNaN(
+                mAutomaticBrightnessStrategy.getTemporaryAutoBrightnessAdjustment()));
+        assertTrue(mAutomaticBrightnessStrategy.shouldResetShortTermModel());
+        assertEquals(0.0f, Settings.System.getFloat(mContext.getContentResolver(),
+                Settings.System.SCREEN_AUTO_BRIGHTNESS_ADJ, Float.NaN), 0.0f);
+
+        mAutomaticBrightnessStrategy.accommodateUserBrightnessChanges(false, 0.75f,
+                DisplayManagerInternal.DisplayPowerRequest.POLICY_BRIGHT, Display.STATE_ON,
+                false, mBrightnessConfiguration,
+                AutomaticBrightnessController.AUTO_BRIGHTNESS_ENABLED);
+
+        verify(mAutomaticBrightnessController).configure(
+                AutomaticBrightnessController.AUTO_BRIGHTNESS_ENABLED,
+                mBrightnessConfiguration, 0.75f, false, 0.0f, false,
+                DisplayManagerInternal.DisplayPowerRequest.POLICY_BRIGHT, Display.STATE_ON,
+                false, true);
+        assertFalse(mAutomaticBrightnessStrategy.shouldResetShortTermModel());
+    }
+
     @After
     public void after() {
         Settings.System.putFloat(mContext.getContentResolver(),

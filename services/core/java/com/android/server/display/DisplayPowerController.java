@@ -416,6 +416,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
     // Responsible for evaluating and tracking the automatic brightness relevant states.
     // Todo: This is a temporary workaround. Ideally DPC should never talk to the strategies
     private final AutomaticBrightnessStrategy mAutomaticBrightnessStrategy;
+    private boolean mBrightnessModeInitialized;
 
     // A record of state for skipping brightness ramps.
     private int mSkipRampState = RAMP_STATE_SKIP_NONE;
@@ -2371,8 +2372,16 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                 mContext.getContentResolver(),
                 Settings.System.SCREEN_BRIGHTNESS_MODE,
                 Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL, UserHandle.USER_CURRENT);
-        mAutomaticBrightnessStrategy.setUseAutoBrightness(screenBrightnessModeSetting
-                == Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC);
+        final boolean useAutoBrightness = screenBrightnessModeSetting
+                == Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
+        if (mBrightnessModeInitialized && useAutoBrightness
+                && !mAutomaticBrightnessStrategy.shouldUseAutoBrightness()) {
+            // Enabling auto-brightness explicitly starts from the configured curve, rather than
+            // restoring a slider adjustment from an earlier automatic session.
+            mAutomaticBrightnessStrategy.resetAutoBrightnessAdjustment();
+        }
+        mBrightnessModeInitialized = true;
+        mAutomaticBrightnessStrategy.setUseAutoBrightness(useAutoBrightness);
 
         if (screenBrightnessModeSetting == Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL) {
             // In manual mode, all brightness changes should be saved immediately.

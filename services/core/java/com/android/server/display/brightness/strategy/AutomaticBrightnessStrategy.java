@@ -294,6 +294,15 @@ public class AutomaticBrightnessStrategy implements DisplayBrightnessStrategy{
         mUseAutoBrightness = useAutoBrightness;
     }
 
+    /** Starts a new automatic session without adjustments from an earlier session. */
+    public void resetAutoBrightnessAdjustment() {
+        mAutoBrightnessAdjustment = 0.0f;
+        mPendingAutoBrightnessAdjustment = 0.0f;
+        mTemporaryAutoBrightnessAdjustment = Float.NaN;
+        mShouldResetShortTermModel = true;
+        putAutoBrightnessAdjustmentSetting(0.0f);
+    }
+
     /**
      * Returns if the user made brightness change events(Typically when they interact with the
      * brightness slider) were accommodated in the auto-brightness mapping strategies. This doesn't
