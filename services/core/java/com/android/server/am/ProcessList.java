@@ -3456,9 +3456,12 @@ public final class ProcessList extends ProcessListInternal
         if (hostingRecord == null || !hostingRecord.usesAppZygote()) {
             // Allocate an isolated UID from the global range
             return mGlobalIsolatedUids;
-        } else if (Flags.useSafesetidUidPolicy2() && UidTransitionPolicy.isEnabled()) {
+        } else if (Flags.useSafesetidUidPolicy2()
+                && UidTransitionPolicy.isEnabled()
+                && getUidTransitionPolicy() != null) {
             return mGlobalAppIsolatedUids;
         } else {
+            // Match app zygote creation when UID policy initialization fails.
             return mAppIsolatedUidRangeAllocator.getOrCreateIsolatedUidRangeLocked(
                     info.processName, hostingRecord.getDefiningUid());
         }
